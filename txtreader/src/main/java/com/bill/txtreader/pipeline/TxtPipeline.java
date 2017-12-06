@@ -31,6 +31,13 @@ public class TxtPipeline implements ITxtPipeline {
         IParagraphCache = new ParagraphCache();
     }
 
+    private void err(Txterror txterror, ITransformer t) {
+        txterror.txterrorcode = TxtErrorCode.LOAD_BOOK_EXCEPTION;
+        txterror.message = "读取文件失败了";
+        t.PostError(txterror);
+        t.PostResult(false);
+    }
+
     @SuppressWarnings("resource")
     @Override
     public IParagraphCache loadTxtFile(InputStream txtfile, String txtcode, ITransformer t) {
@@ -41,11 +48,8 @@ public class TxtPipeline implements ITxtPipeline {
         try {
             Logger.d("loadTxtFile txtcode is: " + txtcode);
             if (txtfile == null) {
-                Logger.e("loadTxtFile txtfile is null ");
-                txterror.txterrorcode = TxtErrorCode.LOAD_BOOK_EXCEPTION;
-                txterror.message = "读取文件失败了";
-                t.PostError(txterror);
-                t.PostResult(false);
+                err(txterror, t);
+                txtfile.close();
                 return IParagraphCache;
             } else {
                 Logger.d("loadTxtFile txtfile len is: " + txtfile.available());
@@ -54,19 +58,11 @@ public class TxtPipeline implements ITxtPipeline {
             bufferedReader = new BufferedReader(new InputStreamReader(txtfile, txtcode));
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
-            Logger.e("loadTxtFile failed: " + e.toString());
-            txterror.txterrorcode = TxtErrorCode.LOAD_BOOK_EXCEPTION;
-            txterror.message = "读取文件编码失败了";
-            t.PostError(txterror);
-            t.PostResult(false);
+            err(txterror, t);
             return IParagraphCache;
         } catch (IOException e) {
             e.printStackTrace();
-            Logger.e("loadTxtFile failed: " + e.toString());
-            txterror.txterrorcode = TxtErrorCode.LOAD_BOOK_EXCEPTION;
-            txterror.message = "读取文件编码失败了";
-            t.PostError(txterror);
-            t.PostResult(false);
+            err(txterror, t);
             return IParagraphCache;
         }
 
@@ -88,6 +84,11 @@ public class TxtPipeline implements ITxtPipeline {
             txterror.message = "加载书籍时出现io异常";
             t.PostError(txterror);
             t.PostResult(false);
+            try {
+                txtfile.close();
+            } catch (IOException e1) {
+
+            }
             return IParagraphCache;
         }
         t.PostResult(true);

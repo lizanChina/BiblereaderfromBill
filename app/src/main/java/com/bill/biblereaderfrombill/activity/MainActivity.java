@@ -77,7 +77,7 @@ public class MainActivity extends Activity {
 
         InputStream fileStream = null;
         try {
-            fileStream = getAssets().open(Cons.FILE_NAME_BIBLE_MAT);
+            fileStream = getAssets().open(Cons.FILE_NAME_BIBLE_ALL);
             if (fileStream != null) {
                 Logger.d("fileStream len: " + fileStream.available());
             } else {
