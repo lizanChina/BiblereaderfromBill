@@ -1,7 +1,6 @@
 package com.bill.biblereaderfrombill.activity;
 
 import android.app.Activity;
-import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.AnimationDrawable;
 import android.os.Bundle;
@@ -21,6 +20,7 @@ import com.bill.biblereaderfrombill.menus.TxtProgressMenu;
 import com.bill.biblereaderfrombill.menus.TxtStyleMenu;
 import com.bill.biblereaderfrombill.menus.TxtTextMenu;
 import com.bill.biblereaderfrombill.menus.TxtViewMenu;
+import com.bill.common.Cons;
 import com.bill.common.Logger;
 import com.bill.txtreader.bean.TxtFile;
 import com.bill.txtreader.bean.ITxtLoadListsner;
@@ -32,7 +32,9 @@ import com.bill.txtreader.mgr.ITxtPageChangeListsner;
 import com.bill.txtreader.mgr.TxtReadView;
 import com.bill.txtreader.mgr.ITxtViewCenterAreaTouchListener;
 
-public class BookPlayActivity extends Activity {
+import java.io.InputStream;
+
+public class MainActivity extends Activity {
 
     private TxtReadView txtreadview;
     private ITxtManager txtManager;
@@ -48,13 +50,12 @@ public class BookPlayActivity extends Activity {
     private TxtReadView mReadView;
     private TextView mTitle, mNodataText, mLoadingMsg;
 
-    private String mBookname = "testbook";
     private int pageindex, pagenums;
     private Handler mHander;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Logger.d("BookPlayActivity onCreate");
+        Logger.d("MainActivity onCreate");
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.txttest_activity_main);
@@ -69,14 +70,26 @@ public class BookPlayActivity extends Activity {
         mStyleMenu = new TxtStyleMenu(this);
         mBrightMenu = new TxtBrightMenu(this);
         mProgressMenu = new TxtProgressMenu(this);
-        String path;
-        Intent intent = getIntent();
-        mBookname = intent.getStringExtra("bookname");
-        path = intent.getStringExtra("bookpath");
 
         TxtFile txtFile = new TxtFile();
-        txtFile.setBookname(mBookname);
-        showLoadingView("加载书籍�?");
+        txtFile.setBookname(Cons.BOOK_NAME);
+        showLoadingView(getResources().getString(R.string.loading));
+
+        InputStream fileStream = null;
+        try {
+            fileStream = getAssets().open(Cons.FILE_NAME_BIBLE_MAT);
+            if (fileStream != null) {
+                Logger.d("fileStream len: " + fileStream.available());
+            } else {
+                Logger.e("load book failed");
+                showNodataViewMsg("load book failed");
+            }
+        } catch (Exception e) {
+            Logger.e("load book failed: " + e.toString());
+            showNodataViewMsg("load book failed");
+        }
+        txtFile.setFileStream(fileStream);
+
         txtManager = new TxtManager(this, txtFile, new ITxtLoadListsner() {
 
             @Override
@@ -92,7 +105,6 @@ public class BookPlayActivity extends Activity {
             }
         });
 
-        txtFile.setFilepath(path);
         txtreadview.setTxtManager(txtManager);
         registListener();
         startloadbook();
@@ -118,7 +130,7 @@ public class BookPlayActivity extends Activity {
         mNodataView = (RelativeLayout) findViewById(R.id.txtview_nodataview);
         mNodataText = (TextView) findViewById(R.id.txtview_nodata_text);
         mLoadingMsg = (TextView) findViewById(R.id.txtview_loading_msg);
-        mTitle.setText(mBookname);
+        mTitle.setText(Cons.BOOK_NAME);
 
     }
 
@@ -319,7 +331,7 @@ public class BookPlayActivity extends Activity {
             @Override
             public void run() {
 
-                View parent = BookPlayActivity.this.getWindow().getDecorView();
+                View parent = MainActivity.this.getWindow().getDecorView();
                 mMenu.showAtLocation(parent, Gravity.BOTTOM, 0, 0);
                 mTitlebar.setVisibility(View.VISIBLE);
             }
@@ -333,7 +345,7 @@ public class BookPlayActivity extends Activity {
             public void run() {
 
                 mMenu.dismiss();
-                View parent = BookPlayActivity.this.getWindow().getDecorView();
+                View parent = MainActivity.this.getWindow().getDecorView();
                 if (!mTxtTextMenu.isShowing())
                     mTxtTextMenu.showAtLocation(parent, Gravity.BOTTOM, 0, 0);
             }
@@ -347,7 +359,7 @@ public class BookPlayActivity extends Activity {
             public void run() {
 
                 mMenu.dismiss();
-                View parent = BookPlayActivity.this.getWindow().getDecorView();
+                View parent = MainActivity.this.getWindow().getDecorView();
                 mBrightMenu.showAtLocation(parent, Gravity.BOTTOM, 0, 0);
             }
         });
@@ -359,7 +371,7 @@ public class BookPlayActivity extends Activity {
             @Override
             public void run() {
                 mMenu.dismiss();
-                View parent = BookPlayActivity.this.getWindow().getDecorView();
+                View parent = MainActivity.this.getWindow().getDecorView();
                 mProgressMenu.showAtLocation(parent, Gravity.BOTTOM, 0, 0);
             }
         });
@@ -372,7 +384,7 @@ public class BookPlayActivity extends Activity {
             @Override
             public void run() {
                 mMenu.dismiss();
-                View parent = BookPlayActivity.this.getWindow().getDecorView();
+                View parent = MainActivity.this.getWindow().getDecorView();
                 mStyleMenu.showAtLocation(parent, Gravity.BOTTOM, 0, 0);
             }
         });

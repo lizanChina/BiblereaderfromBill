@@ -90,7 +90,7 @@ public class TxtReadView extends View {
         mManager = getTxtMAnager();
         shadowwith = 5;
         txtModel = new TxtModel(getContext(), mManager, mManager
-                .getTxtFile().getFilepath());
+                .getTxtFile().getFileStream());
         txtModel.setModeToViewTransform(new IModeToViewTransform() {
 
             @Override

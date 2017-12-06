@@ -1,6 +1,6 @@
 package com.bill.txtreader.pipeline;
 
-import java.io.File;
+import java.io.InputStream;
 import java.util.List;
 
 import android.graphics.Paint;
@@ -20,7 +20,7 @@ public interface ITxtPipeline {
      * @param txtfile
      * @return
      */
-    public IParagraphCache LoadTxtFile(File txtfile, String charsetname, ITransformer t);
+    public IParagraphCache loadTxtFile(InputStream txtfile, String charsetname, ITransformer t);
 
     /**
      * 思路就是一段一段的将段落数据转化为行数据，然后根据一页需要多少行进行填充

@@ -1,10 +1,9 @@
 package com.bill.txtreader.utils;
 
 import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 
 import org.mozilla.intl.chardet.nsDetector;
 import org.mozilla.intl.chardet.nsICharsetDetectionObserver;
@@ -22,7 +21,7 @@ public class FileCharsetDetector {
      * @throws FileNotFoundException
      * @throws IOException
      */
-    public String guessFileEncoding(File file) throws FileNotFoundException,
+    public String guessFileEncoding(InputStream file) throws FileNotFoundException,
             IOException {
         return guessFileEncoding(file, new nsDetector());
     }
@@ -46,7 +45,7 @@ public class FileCharsetDetector {
      * @throws FileNotFoundException
      * @throws IOException
      */
-    public String guessFileEncoding(File file, int languageHint)
+    public String guessFileEncoding(InputStream file, int languageHint)
             throws FileNotFoundException, IOException {
         return guessFileEncoding(file, new nsDetector(languageHint));
     }
@@ -60,7 +59,7 @@ public class FileCharsetDetector {
      * @throws FileNotFoundException
      * @throws IOException
      */
-    private String guessFileEncoding(File file, nsDetector det)
+    private String guessFileEncoding(InputStream file, nsDetector det)
             throws FileNotFoundException, IOException {
         // Set an observer...
         // The Notify() will be called when a matching charset is found.
@@ -72,8 +71,7 @@ public class FileCharsetDetector {
             }
         });
 
-        BufferedInputStream imp = new BufferedInputStream(new FileInputStream(
-                file));
+        BufferedInputStream imp = new BufferedInputStream(file);
         byte[] buf = new byte[1024];
         int len;
         boolean done = false;
@@ -91,7 +89,6 @@ public class FileCharsetDetector {
                 break;
             }
         }
-        imp.close();
         det.DataEnd();
 
         if (isAscii) {

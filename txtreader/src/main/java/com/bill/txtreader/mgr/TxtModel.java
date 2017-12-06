@@ -1,8 +1,8 @@
 package com.bill.txtreader.mgr;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -24,7 +24,7 @@ public class TxtModel implements ITxtModel {
     private ITxtPipeline txtPipeline;
     private TxtBitmapCache bitmapCache;
     private TxtPageMsgDB mTxtPageMsgDB;
-    private File txtfile;
+    private InputStream txtfile;
     private Context context;
     private Page prepage;
     private Page midpage;
@@ -36,26 +36,18 @@ public class TxtModel implements ITxtModel {
     private int pagenums = -1;
     private IModeToViewTransform IModeToViewTransform;
 
-    public TxtModel(Context context, ITxtManager txtManager, String txtfilepath) {
+    public TxtModel(Context context, ITxtManager txtManager, InputStream fileStream) {
         this.context = context;
         this.txtManager = txtManager;
         Txterror txterror = new Txterror();
         txterror.txterrorcode = TxtErrorCode.LOAD_BOOK_EXCEPTION;
         txtManager.setModeTransform(new IManagerToModelTransformImp());
 
-        try {
-            this.txtfile = new File(txtfilepath);
-        } catch (Exception e) {
-            e.printStackTrace();
-            txterror.message = "文件路径为空";
-            txtManager.onTxtLoaderror(txterror);
-            return;
-        }
-
-        if (!this.txtfile.exists()) {
+        this.txtfile = fileStream;
+        if (this.txtfile == null) {
             txterror.message = "文件不存在";
             txtManager.onTxtLoaderror(txterror);
-            Logger.e("==============", "文件不存在");
+            Logger.e("文件不存在");
             return;
         }
 
@@ -74,12 +66,15 @@ public class TxtModel implements ITxtModel {
     }
 
     @Override
-    public void LoadTxtFile(ITransformer t) throws FileNotFoundException, IOException {
+    public void LoadTxtFile(ITransformer t) throws IOException {
+        //为了实现InputStream的复用，暂时投机取巧使用mark和reset的方法，以后优化
+        txtfile.mark(0);
         String charset = getchartset();
-        txtPipeline.LoadTxtFile(txtfile, charset, t);
+        txtfile.reset();
+        txtPipeline.loadTxtFile(txtfile, charset, t);
     }
 
-    private String getchartset() throws FileNotFoundException, IOException {
+    private String getchartset() throws IOException {
         String chartset = new FileCharsetDetector().guessFileEncoding(txtfile);
         if (chartset.contains("windows") || chartset.contains("WINDOWS")) {
             chartset = "unicode";

@@ -4,5 +4,6 @@
     <string name="app_name">testTxtBook</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
+    <string name="loading">正在加载...</string>
 
 </resources>

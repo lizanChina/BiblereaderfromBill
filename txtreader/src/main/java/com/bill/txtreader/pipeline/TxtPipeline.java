@@ -1,10 +1,8 @@
 package com.bill.txtreader.pipeline;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
@@ -12,6 +10,7 @@ import java.util.List;
 
 import android.graphics.Paint;
 
+import com.bill.common.Logger;
 import com.bill.txtreader.bean.CharElement;
 import com.bill.txtreader.bean.ILineChar;
 import com.bill.txtreader.bean.LineChar;
@@ -34,24 +33,36 @@ public class TxtPipeline implements ITxtPipeline {
 
     @SuppressWarnings("resource")
     @Override
-    public IParagraphCache LoadTxtFile(File txtfile, String txtcode, ITransformer t) {
+    public IParagraphCache loadTxtFile(InputStream txtfile, String txtcode, ITransformer t) {
 
         BufferedReader bufferedReader = null;
         Txterror txterror = new Txterror();
 
         try {
-            try {
-                bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(txtfile), txtcode));
-            } catch (FileNotFoundException e) {
+            Logger.d("loadTxtFile txtcode is: " + txtcode);
+            if (txtfile == null) {
+                Logger.e("loadTxtFile txtfile is null ");
                 txterror.txterrorcode = TxtErrorCode.LOAD_BOOK_EXCEPTION;
-                txterror.message = "无法找到该书籍文件";
+                txterror.message = "读取文件失败了";
                 t.PostError(txterror);
                 t.PostResult(false);
-
                 return IParagraphCache;
+            } else {
+                Logger.d("loadTxtFile txtfile len is: " + txtfile.available());
             }
-        } catch (UnsupportedEncodingException e) {
 
+            bufferedReader = new BufferedReader(new InputStreamReader(txtfile, txtcode));
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+            Logger.e("loadTxtFile failed: " + e.toString());
+            txterror.txterrorcode = TxtErrorCode.LOAD_BOOK_EXCEPTION;
+            txterror.message = "读取文件编码失败了";
+            t.PostError(txterror);
+            t.PostResult(false);
+            return IParagraphCache;
+        } catch (IOException e) {
+            e.printStackTrace();
+            Logger.e("loadTxtFile failed: " + e.toString());
             txterror.txterrorcode = TxtErrorCode.LOAD_BOOK_EXCEPTION;
             txterror.message = "读取文件编码失败了";
             t.PostError(txterror);
@@ -63,7 +74,9 @@ public class TxtPipeline implements ITxtPipeline {
 
         int i = 0;
         try {
+            Logger.d("start reading book");
             while ((data = bufferedReader.readLine()) != null) {
+                Logger.d("loading " + i);
                 IParagraph IParagraph = new Paragraph();
                 IParagraph.setParagraphIndex(i);
                 IParagraph.addStringdata(data);
@@ -78,6 +91,7 @@ public class TxtPipeline implements ITxtPipeline {
             return IParagraphCache;
         }
         t.PostResult(true);
+        Logger.d("load ok");
 
         return IParagraphCache;
     }

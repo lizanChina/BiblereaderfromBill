@@ -1,23 +1,25 @@
 package com.bill.txtreader.bean;
 
+import java.io.InputStream;
+
 public class TxtFile {
 
-    private String filepath;
+    private InputStream fileStream;
     private String bookname;
 
-    // 获取文件路径
-    public String getFilepath() {
-        return filepath;
+    // 获取流
+    public InputStream getFileStream() {
+        return this.fileStream;
     }
 
-    // 设置文件路径
-    public void setFilepath(String filepath) {
-        this.filepath = filepath;
+    // 设置文件流
+    public void setFileStream(InputStream fileStream) {
+        this.fileStream = fileStream;
     }
 
     // 获取书名
     public String getBookname() {
-        return bookname;
+        return this.bookname;
     }
 
     // 设置书名
